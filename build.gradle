@@ -1,0 +1,46 @@
+plugins {
+	id 'org.springframework.boot' version '2.1.6.RELEASE'
+	id 'java'
+	id "com.moowork.node" version "1.3.1"
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+group = 'project.school'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
+	compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-xml', version: '2.10.3'
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.10.3'
+}
+
+node {
+	version = '12.4.0'
+	npmVersion = '6.9.0'
+	nodeModulesDir = file("./")
+	download = true
+}
+
+task webpack(type: NodeTask, dependsOn: ["npmInstall"]) {
+	script = file('node_modules/webpack-dev-server/bin/webpack-dev-server.js')
+}
+
+task reactBuild(type: NodeTask, dependsOn: ["npmInstall"]) {
+	script = file('node_modules/webpack/bin/webpack.js')
+	args = ["--config", "webpack.prod.js"]
+}
+
+bootJar {
+	launchScript()
+}
+
+tasks.bootJar.dependsOn(reactBuild)
